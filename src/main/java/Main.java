@@ -8,6 +8,7 @@ import model.gantryTrans.GantryCpcTransaction;
 import model.gantryTrans.GantryEtcTransaction;
 import sender.DefaultSender;
 import sender.FileSender;
+import sender.KafkaSender;
 
 import java.io.IOException;
 import java.util.ArrayList;
@@ -39,9 +40,11 @@ public class Main {
         DataSource gantryETCSource = new DataSource(gantryETCFiles, 25, GantryEtcTransaction.class);
 
         // 装配 datasource
-        FileSender defaultSender = new FileSender("output.txt");
-//        DataManager dataManager = new DataManager(List.of(exInCPCSource, exInETCSource, gantryCPCSource, gantryETCSource), defaultSender);
-        DataManager dataManager = new DataManager(List.of(exInCPCSource, exInETCSource), defaultSender);
+//        FileSender defaultSender = new FileSender("output.txt");
+//        DefaultSender defaultSender = new DefaultSender();
+        KafkaSender defaultSender = KafkaSender.getSender();
+        DataManager dataManager = new DataManager(List.of(exInCPCSource, exInETCSource, gantryCPCSource, gantryETCSource), defaultSender);
+//        DataManager dataManager = new DataManager(List.of(exInCPCSource, exInETCSource), defaultSender);
 
         dataManager.execute();
 
