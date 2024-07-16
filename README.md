@@ -38,4 +38,4 @@ DataManager dataManager = new DataManager(List.of(exInCPCSource, exInETCSource, 
 ```
 ## 三、注意事项
 * 输入数据必须按照时间顺序排序，否则重放结果会出错
-* 目前的重放过程中没有获取数据的 passID 作为 key，向 Kafka 发送数据时没有指定 key，因此数据会被随机分配到不同的 partition 中，从而导致同一 passID 的数据乱序，同时影响水位线的生成。**请将 Kafka 的 partition 调整至 1**。
+* ~~目前的重放过程中没有获取数据的 passID 作为 key，向 Kafka 发送数据时没有指定 key，因此数据会被随机分配到不同的 partition 中，从而导致同一 passID 的数据乱序，同时影响水位线的生成。请将 Kafka 的 partition 调整至 1。~~ (已解决，使用 passID 作为 key，并指定 partitioner)

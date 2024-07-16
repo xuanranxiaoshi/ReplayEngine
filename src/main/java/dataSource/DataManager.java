@@ -3,6 +3,7 @@ package dataSource;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.Getter;
+import model.Records;
 import sender.Sender;
 
 import java.io.IOException;
@@ -18,7 +19,7 @@ public class DataManager {
     @Getter
     private int num = 0;
 
-    private PriorityQueue<Record> queue;
+    private PriorityQueue<Records> queue;
 
     private List<DataSource> dataSources;
 
@@ -31,7 +32,7 @@ public class DataManager {
         this.queue = new PriorityQueue<>();
         // 初始化队列: 为每类文件添加一条最早的数据
         for (DataSource dataSource : dataSources) {
-            queue.add(new Record(dataSource.getNextMsg(), dataSource.getTimeStamp(),dataSource));
+            queue.add(dataSource.getNextRecord());
             System.out.println(dataSource + "\t add : " + dataSource.getTime() + " " + dataSource.getTimeStamp());
         }
     }
@@ -39,38 +40,25 @@ public class DataManager {
 
     public void execute() throws IOException {
         while (!this.queue.isEmpty()){
-            Record record = queue.poll();
+            Records record = queue.poll();
 
             DataSource dataSource = record.getDataSource();
 
             // 发送数据
-//            System.out.println(dataSource + "\t send: " + dataSource.getTime() + " " + dataSource.getTimeStamp());
-            sendMsg(record.data);
+            sendMsg(record.getKey(), record.getData());
 
             // 添加新数据
-            String nextRecord = dataSource.getNextMsg();
+            Records nextRecord = dataSource.getNextRecord();
             if(nextRecord != null){
-                queue.add(new Record(nextRecord,dataSource.getTimeStamp(),dataSource));
-//                System.out.println(dataSource + "\t add : " + dataSource.getTime() + " " + dataSource.getTimeStamp());
+                queue.add(nextRecord);
             }
         }
     }
 
 
-    public void sendMsg(String msg){
+    public void sendMsg(String key, String msg){
         num ++;
-        sender.sendMsg(msg);
+        sender.sendMsg(key, msg);
     }
 
-    @AllArgsConstructor
-    @Data
-    static class Record implements Comparable<Record> {
-        private String data;
-        private long timeStamp;
-        private DataSource dataSource;
-        @Override
-        public int compareTo(Record o) {
-            return (int) (this.timeStamp - o.timeStamp);
-        }
-    }
 }

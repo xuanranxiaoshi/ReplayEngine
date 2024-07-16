@@ -7,6 +7,7 @@ import com.fasterxml.jackson.databind.node.ObjectNode;
 import lombok.Data;
 import lombok.Getter;
 import mapper.ResultMapperFactory;
+import model.Records;
 import model.ResultTransaction;
 
 import java.io.BufferedReader;
@@ -138,15 +139,14 @@ public class DataSource{
         return -1;
     }
 
-    // 返回下一条数据（json）
-    public String getNextMsg() throws IOException {
-
-        if(this.ended) return null;
-
+    // 返回下一条数据（Records）
+    public Records getNextRecord() throws IOException {
         String line = reader.readLine();
         // 如果为空，但是还有文件没读，则读取新文件
         if(line == null && isLeftFiles()){
-            if(updateReader())  line = reader.readLine();
+            if(updateReader()) {
+                line = reader.readLine();
+            }
         }
         if(line == null){
             this.ended = true;
@@ -154,10 +154,16 @@ public class DataSource{
         }
         // 更新当前时间戳
         this.timeStamp = extractTimestamp(line);
+        // 提取 passID
+        return new Records(this.extractPassID(line), this.getMsg(line), this.timeStamp, this);
         // 返回数据
-        return getMsg(line);
+
     }
 
+    private String extractPassID(String line){
+        JsonNode jsonNode = csv2Json(line);
+        return jsonNode.get("PASSID").asText();
+    }
 
     @Override
     public String toString() {
